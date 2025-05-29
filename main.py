@@ -8,6 +8,7 @@ CARE系统主入口
 """
 
 import os
+import sys
 import re
 import json
 import logging
@@ -18,6 +19,12 @@ from autogen import GroupChat, GroupChatManager
 from agents import LogAgent, TraceAgent, MetricAgent, ReportAgent
 from workflow.consensus_coordinator import ConsensusCoordinator
 
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(current_dir)
+sys.path.insert(0, project_root)
+
+from config import dataset_path, api_type, model
+
 # 配置日志
 logging.basicConfig(
     level=logging.INFO,
@@ -26,7 +33,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class CARESystem:
+class CARE:
     """CARE多智能体协作根因分析系统"""
     
     def __init__(self, llm_config: Dict[str, Any]):
@@ -37,7 +44,7 @@ class CARESystem:
             llm_config: LLM配置
         """
         self.llm_config = llm_config
-        self.data_path = "/home/kangkang/code/care/data"
+        self.data_path = dataset_path
         
         # 初始化智能体
         self.log_agent = LogAgent(llm_config=llm_config)
@@ -398,12 +405,12 @@ def main():
     """主函数"""
     # LLM配置 - 使用本地llama3.1
     llm_config = autogen.LLMConfig(
-        api_type="ollama",
-        model="llama3.1",
+        api_type=api_type,
+        model=model,
     )
     
     # 创建CARE系统实例
-    care_system = CARESystem(llm_config=llm_config)
+    care_system = CARE(llm_config=llm_config)
     
     # 运行演示
     import sys

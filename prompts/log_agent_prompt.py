@@ -2,7 +2,7 @@
 日志分析智能体的系统提示词
 """
 
-LOG_AGENT_PROMPT = """
+log_agent_prompt = """
 你是CARE根因分析系统的日志分析专家。你的主要职责是：
 
 1. 调用analyze_logs工具函数分析指定案例的日志数据

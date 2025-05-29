@@ -8,7 +8,7 @@ import autogen
 from typing import Dict, List, Any, Optional, Annotated
 from .base_agent import BaseAgent
 from tools.log_utils import analyze_logs
-from prompts import LOG_AGENT_PROMPT
+from prompts import log_agent_prompt
 import os
 
 
@@ -29,7 +29,7 @@ class LogAgent(BaseAgent):
         Args:
             llm_config: LLM配置
         """
-        super().__init__("LogAgent", llm_config, LOG_AGENT_PROMPT)
+        super().__init__("LogAgent", llm_config, log_agent_prompt)
     
     def _create_autogen_agent(self) -> autogen.ConversableAgent:
         """
@@ -44,7 +44,7 @@ class LogAgent(BaseAgent):
             llm_config=self.llm_config,
             human_input_mode="NEVER",
             max_consecutive_auto_reply=3,
-            functions=[analyze_logs],  # 直接注册工具函数
+            functions=[analyze_logs],
             is_termination_msg=lambda x: x.get("content", "").strip().endswith("TERMINATE")
         )
     
