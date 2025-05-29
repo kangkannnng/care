@@ -1,0 +1,5 @@
+{
+  "service": "payment",
+  "metric": "mem",
+  "root_cause": "payment_mem"
+}

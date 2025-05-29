@@ -1,0 +1,72 @@
+timestamp,service,level,message
+1747123626,shipping,INFO,Normal operation in shipping
+1747123626,order,INFO,Normal operation in order
+1747123641,order,INFO,Normal operation in order
+1747123656,frontend,INFO,Normal operation in frontend
+1747123686,payment,INFO,Normal operation in payment
+1747123701,frontend,INFO,Normal operation in frontend
+1747123701,payment,INFO,Normal operation in payment
+1747123716,payment,INFO,Normal operation in payment
+1747123716,shipping,INFO,Normal operation in shipping
+1747123746,payment,INFO,Normal operation in payment
+1747123776,shipping,INFO,Normal operation in shipping
+1747123791,frontend,INFO,Normal operation in frontend
+1747123791,cart,INFO,Normal operation in cart
+1747123791,shipping,INFO,Normal operation in shipping
+1747123821,frontend,INFO,Normal operation in frontend
+1747123821,cart,INFO,Normal operation in cart
+1747123821,shipping,INFO,Normal operation in shipping
+1747123836,shipping,INFO,Normal operation in shipping
+1747123851,cart,INFO,Normal operation in cart
+1747123851,payment,INFO,Normal operation in payment
+1747123911,frontend,INFO,Normal operation in frontend
+1747123926,shipping,INFO,Normal operation in shipping
+1747123926,payment,ERROR,High mem usage detected in payment
+1747123956,cart,INFO,Normal operation in cart
+1747123956,order,INFO,Normal operation in order
+1747123956,payment,ERROR,High mem usage detected in payment
+1747123971,frontend,INFO,Normal operation in frontend
+1747123971,cart,INFO,Normal operation in cart
+1747123986,frontend,INFO,Normal operation in frontend
+1747123986,cart,INFO,Normal operation in cart
+1747123986,order,INFO,Normal operation in order
+1747124001,frontend,INFO,Normal operation in frontend
+1747124001,cart,INFO,Normal operation in cart
+1747124001,payment,INFO,Normal operation in payment
+1747124001,payment,ERROR,High mem usage detected in payment
+1747124016,cart,INFO,Normal operation in cart
+1747124016,shipping,INFO,Normal operation in shipping
+1747124031,frontend,INFO,Normal operation in frontend
+1747124031,payment,INFO,Normal operation in payment
+1747124031,shipping,INFO,Normal operation in shipping
+1747124031,payment,ERROR,High mem usage detected in payment
+1747124046,shipping,INFO,Normal operation in shipping
+1747124046,payment,ERROR,High mem usage detected in payment
+1747124061,cart,INFO,Normal operation in cart
+1747124061,payment,INFO,Normal operation in payment
+1747124061,order,INFO,Normal operation in order
+1747124061,payment,ERROR,High mem usage detected in payment
+1747124076,cart,INFO,Normal operation in cart
+1747124076,payment,ERROR,High mem usage detected in payment
+1747124091,cart,INFO,Normal operation in cart
+1747124091,payment,INFO,Normal operation in payment
+1747124091,payment,ERROR,High mem usage detected in payment
+1747124106,frontend,INFO,Normal operation in frontend
+1747124121,cart,INFO,Normal operation in cart
+1747124136,frontend,INFO,Normal operation in frontend
+1747124136,shipping,INFO,Normal operation in shipping
+1747124136,order,INFO,Normal operation in order
+1747124136,payment,ERROR,High mem usage detected in payment
+1747124151,shipping,INFO,Normal operation in shipping
+1747124151,payment,ERROR,High mem usage detected in payment
+1747124166,cart,INFO,Normal operation in cart
+1747124166,order,INFO,Normal operation in order
+1747124166,payment,ERROR,High mem usage detected in payment
+1747124181,frontend,INFO,Normal operation in frontend
+1747124181,cart,INFO,Normal operation in cart
+1747124181,payment,INFO,Normal operation in payment
+1747124181,payment,ERROR,High mem usage detected in payment
+1747124196,payment,ERROR,High mem usage detected in payment
+1747124211,cart,INFO,Normal operation in cart
+1747124211,order,INFO,Normal operation in order
+1747124211,payment,ERROR,High mem usage detected in payment

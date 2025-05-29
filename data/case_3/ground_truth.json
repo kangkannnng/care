@@ -1,0 +1,5 @@
+{
+  "service": "shipping",
+  "metric": "latency",
+  "root_cause": "shipping_latency"
+}
