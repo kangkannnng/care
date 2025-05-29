@@ -6,12 +6,20 @@
 
 import pandas as pd
 import os
+import sys
 from datetime import datetime
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Annotated
 import numpy as np
 
+# 添加项目根目录到Python路径，以便导入config模块
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(current_dir)
+sys.path.insert(0, project_root)
 
-def analyze_traces(case_id: str) -> Dict[str, Any]:
+from config import dataset_path
+
+
+def analyze_traces(case_id: Annotated[str, "案例ID，如 '1', '2', '3'"]) -> Dict[str, Any]:
     """
     分析指定案例的调用链数据，检测性能瓶颈和异常调用
     
@@ -23,7 +31,7 @@ def analyze_traces(case_id: str) -> Dict[str, Any]:
     """
     try:
         # 构建数据文件路径
-        base_path = "/home/kangkang/code/care/data"
+        base_path = dataset_path
         case_path = os.path.join(base_path, f"case_{case_id}")
         traces_file = os.path.join(case_path, "traces.csv")
         

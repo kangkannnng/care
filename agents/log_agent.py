@@ -5,9 +5,10 @@
 """
 
 import autogen
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Annotated
 from .base_agent import BaseAgent
 from tools.log_utils import analyze_logs
+from prompts import LOG_AGENT_PROMPT
 import os
 
 
@@ -28,46 +29,25 @@ class LogAgent(BaseAgent):
         Args:
             llm_config: LLM配置
         """
-        system_message = """
-你是CARE根因分析系统的日志分析专家。你的主要职责是：
-
-1. 调用analyze_logs工具函数分析指定案例的日志数据
-2. 基于日志内容进行专业的根因分析
-3. 识别错误模式、异常时间点和问题服务
-4. 提供清晰的分析过程和逻辑推理
-
-分析要求：
-- 必须使用analyze_logs函数获取日志数据
-- 重点关注ERROR和WARN级别的日志
-- 分析错误的时间分布和服务分布模式
-- 基于日志证据进行逻辑推理，得出可能的根因
-- 用自然语言清晰表达你的分析过程和结论
-
-输出格式：
-请提供完整的分析过程，包括：
-- 使用的工具函数和参数
-- 观察到的关键现象和异常
-- 逻辑推理过程
-- 得出的结论和建议
-
-注意：你的分析结果将被其他智能体评估，确保逻辑清晰、证据充分。
-"""
-        
-        super().__init__("LogAgent", llm_config, system_message)
+        super().__init__("LogAgent", llm_config, LOG_AGENT_PROMPT)
     
-    def register_tools(self, user_proxy: autogen.UserProxyAgent) -> None:
+    def _create_autogen_agent(self) -> autogen.ConversableAgent:
         """
-        注册日志分析工具函数
-        
-        Args:
-            user_proxy: 用户代理实例
+        创建带有工具的AutoGen智能体实例
+
+        Returns:
+            AutoGen智能体实例
         """
-        # 注册analyze_logs函数
-        user_proxy.register_for_execution(name="analyze_logs")(analyze_logs)
-        self.agent.register_for_llm(
-            name="analyze_logs",
-            description="分析指定案例的日志数据，检测异常并进行根因分析"
-        )(analyze_logs)
+        return autogen.ConversableAgent(
+            name=self.name,
+            system_message=self.system_message,
+            llm_config=self.llm_config,
+            human_input_mode="NEVER",
+            max_consecutive_auto_reply=3,
+            functions=[analyze_logs],  # 直接注册工具函数
+            is_termination_msg=lambda x: x.get("content", "").strip().endswith("TERMINATE")
+        )
+    
     
     def initiate_analysis(self, case_id: str, manager: autogen.GroupChatManager) -> str:
         """

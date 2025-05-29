@@ -5,9 +5,10 @@
 """
 
 import autogen
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Annotated
 from .base_agent import BaseAgent
 from tools.report_utils import generate_final_report
+from prompts import REPORT_AGENT_PROMPT
 
 
 class ReportAgent(BaseAgent):
@@ -27,47 +28,24 @@ class ReportAgent(BaseAgent):
         Args:
             llm_config: LLM配置
         """
-        system_message = """
-你是CARE根因分析系统的报告生成专家。你的主要职责是：
-
-1. 整合日志、调用链、指标三个智能体的分析结果
-2. 基于多维度分析进行综合根因推理
-3. 生成结构化的最终分析报告
-4. 提供明确的根因结论和改进建议
-
-分析要求：
-- 仔细阅读所有已通过共识的分析结果
-- 寻找不同维度分析结果之间的关联性和一致性
-- 基于多重证据进行综合推理
-- 得出最终的根因结论
-- 调用generate_final_report函数生成格式化报告
-
-输出格式：
-请提供完整的综合分析，包括：
-- 对各智能体分析结果的总结
-- 多维度证据的交叉验证
-- 综合推理过程
-- 最终根因结论
-- 使用工具函数生成正式报告
-
-注意：你的分析是整个系统的最终输出，确保结论准确、逻辑严密。
-"""
-        
-        super().__init__("ReportAgent", llm_config, system_message)
+        super().__init__("ReportAgent", llm_config, REPORT_AGENT_PROMPT)
     
-    def register_tools(self, user_proxy: autogen.UserProxyAgent) -> None:
+    def _create_autogen_agent(self) -> autogen.ConversableAgent:
         """
-        注册报告生成工具函数
-        
-        Args:
-            user_proxy: 用户代理实例
+        创建带有工具的AutoGen智能体实例
+
+        Returns:
+            AutoGen智能体实例
         """
-        # 注册generate_final_report函数
-        user_proxy.register_for_execution(name="generate_final_report")(generate_final_report)
-        self.agent.register_for_llm(
-            name="generate_final_report",
-            description="生成结构化的最终根因分析报告"
-        )(generate_final_report)
+        return autogen.ConversableAgent(
+            name=self.name,
+            system_message=self.system_message,
+            llm_config=self.llm_config,
+            human_input_mode="NEVER",
+            max_consecutive_auto_reply=3,
+            functions=[generate_final_report],  # 直接注册工具函数
+            is_termination_msg=lambda x: x.get("content", "").strip().endswith("TERMINATE")
+        )
     
     def initiate_report_generation(
         self, 
@@ -145,25 +123,37 @@ class ReportAgent(BaseAgent):
         """
         from tools.report_utils import generate_final_report
         
-        # 综合分析各部分结果
-        final_conclusion = f"""
-基于多智能体协作分析，案例{case_id}的根因分析结论如下：
-
-日志分析显示：{log_analysis[:200]}...
-调用链分析显示：{trace_analysis[:200]}...
-指标分析显示：{metric_analysis[:200]}...
-
-综合判断：系统出现性能异常，建议重点关注相关服务组件。
-"""
+        # 基于三个智能体的分析进行综合推理
+        root_cause = "系统出现性能异常，需要进一步分析具体根因"
+        recommendations = "建议优化相关服务组件，加强监控和预警机制"
         
-        # 生成正式报告
+        # 更详细的根因分析
+        if "ERROR" in log_analysis or "异常" in log_analysis:
+            if "延迟" in trace_analysis or "性能" in trace_analysis:
+                if "CPU" in metric_analysis or "内存" in metric_analysis:
+                    root_cause = "系统资源瓶颈导致的性能问题"
+                    recommendations = "扩容系统资源，优化代码性能"
+                else:
+                    root_cause = "服务调用链性能瓶颈"
+                    recommendations = "优化服务调用逻辑，减少不必要的调用"
+            else:
+                root_cause = "应用层错误或配置问题"
+                recommendations = "检查应用配置和代码逻辑"
+        
+        # 调用工具函数生成正式报告
         report = generate_final_report(
-            user_query=user_query,
+            case_id=case_id,
             log_analysis=log_analysis,
             trace_analysis=trace_analysis,
             metric_analysis=metric_analysis,
-            consensus_results=[],
-            final_conclusion=final_conclusion
+            root_cause=root_cause,
+            recommendations=recommendations
         )
+        
+        # 返回格式化的报告文本
+        if report.get("success"):
+            return report["formatted_text"]
+        else:
+            return f"报告生成失败: {report.get('error', '未知错误')}"
         
         return report

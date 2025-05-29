@@ -6,14 +6,20 @@
 
 import pandas as pd
 import os
+import sys
 from datetime import datetime
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Annotated
 import numpy as np
 
-file_path = "/home/kangkang/code/care/data"
+# 添加项目根目录到Python路径，以便导入config模块
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(current_dir)
+sys.path.insert(0, project_root)
+
+from config import dataset_path
 
 
-def analyze_metrics(case_id: str) -> Dict[str, Any]:
+def analyze_metrics(case_id: Annotated[str, "案例ID，如 '1', '2', '3'"]) -> Dict[str, Any]:
     """
     分析指定案例的系统指标数据，检测资源异常和性能问题
     
@@ -25,7 +31,7 @@ def analyze_metrics(case_id: str) -> Dict[str, Any]:
     """
     try:
         # 构建数据文件路径
-        base_path = file_path
+        base_path = dataset_path
         case_path = os.path.join(base_path, f"case_{case_id}")
         metrics_file = os.path.join(case_path, "metrics.csv")
         

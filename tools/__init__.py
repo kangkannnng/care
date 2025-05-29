@@ -6,6 +6,7 @@ CARE系统工具函数模块
 from .log_utils import analyze_logs
 from .trace_utils import analyze_traces
 from .metric_utils import analyze_metrics
+from .report_utils import generate_final_report
 
 __all__ = [
     'analyze_logs',

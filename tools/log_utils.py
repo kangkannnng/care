@@ -6,12 +6,19 @@
 
 import pandas as pd
 import os
+import sys
 from datetime import datetime
 import re
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Annotated
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(current_dir)
+sys.path.insert(0, project_root)
+
+from config import dataset_path
 
 
-def analyze_logs(case_id: str) -> Dict[str, Any]:
+def analyze_logs(case_id: Annotated[str, "案例ID，如 '1', '2', '3'"]) -> Dict[str, Any]:
     """
     分析指定案例的日志数据，检测异常并提供全面信息
     
@@ -23,7 +30,7 @@ def analyze_logs(case_id: str) -> Dict[str, Any]:
     """
     try:
         # 构建数据文件路径
-        base_path = "/home/kangkang/code/care/data"
+        base_path = dataset_path
         case_path = os.path.join(base_path, f"case_{case_id}")
         logs_file = os.path.join(case_path, "logs.csv")
         
