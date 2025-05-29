@@ -1,72 +1,70 @@
-# CARE (多智能体协作根因分析框架)
+# 项目名称
 
-## 项目概述
+## 项目简介
+本项目旨在通过日志、指标和调用链分析来定位系统问题的根因。它包含多个智能体和工具，用于分析数据并生成结构化的根因分析报告。
 
-CARE (Collaborative AI Root-cause Explorer) 是一个基于 AutoGen 实现的多智能体协作根因分析框架。它旨在通过整合来自不同来源（如日志、追踪、指标）的数据，利用多个专门的AI智能体进行分析，并通过共识机制来确定问题的根本原因，最终生成易于理解的解释性报告。
-
-## 主要特性
-
-*   **多智能体协作**: 利用专门的智能体（日志分析、追踪分析、指标分析、报告生成）协同工作。
-*   **多源数据分析**: 能够处理和分析来自日志、追踪和指标等多种监控数据。
-*   **共识机制**: 通过内置的共识协调器，对各智能体的分析结果进行投票和评估，确保分析的准确性和一致性。
-*   **自动化报告**: 自动生成包含根因分析过程和结论的报告。
-*   **基于AutoGen**: 利用 AutoGen 框架的强大功能来构建和管理智能体对话和工作流。
-
-## 项目结构
-
+## 文件结构
 ```
-.
-├── main.py                 # 系统主入口程序
-├── requirements.txt        # Python 依赖包
-├── README.md               # 项目说明文件
-├── agents/                 # 包含各类智能体的实现
-│   ├── base_agent.py       # 基础智能体类
-│   ├── log_agent.py        # 日志分析智能体
-│   ├── metric_agent.py     # 指标分析智能体
-│   ├── report_agent.py     # 报告生成智能体
-│   └── trace_agent.py      # 追踪分析智能体
-├── data/                   # 存放案例数据（每个case一个子目录）
-│   └── case_X/
-│       ├── logs.csv
-│       ├── metrics.csv
-│       └── traces.csv
-├── tools/                  # 包含各种数据处理和分析的工具类
-│   ├── log_utils.py
-│   ├── metric_utils.py
-│   ├── report_utils.py
-│   └── trace_utils.py
-└── workflow/               # 定义核心工作流，如共识机制
-    └── consensus_coordinator.py # 共识协调器实现
+main.py
+README.md
+requirements.txt
+agents/
+	__init__.py
+	base_agent.py
+	log_agent.py
+	metric_agent.py
+	report_agent.py
+	trace_agent.py
+data/
+	case_1/
+		ground_truth.json
+		inject_time.txt
+		logs.csv
+		metrics.csv
+		traces.csv
+	case_2/
+		ground_truth.json
+		inject_time.txt
+		logs.csv
+		metrics.csv
+		traces.csv
+	case_3/
+		ground_truth.json
+		inject_time.txt
+		logs.csv
+		metrics.csv
+		traces.csv
+result/
+	agent_result.txt
+	final_result.txt
+	function_result.txt
+tools/
+	__init__.py
+	log_utils.py
+	metric_utils.py
+	root_cause_analysis_report.md
+	trace_utils.py
+workflow/
+	__init__.py
+	consensus_coordinator.py
 ```
-
-## 安装与环境设置
-
-1.  确保已安装 Python 3.8 或更高版本。
-2.  克隆本项目到本地。
-3.  进入项目根目录，并通过以下命令安装所需依赖：
-    ```bash
-    pip install -r requirements.txt
-    ```
-4.  根据需要配置大语言模型 (LLM) 的 API Key 或相关参数 (具体配置方式请参考 `main.py` 中的 `llm_config`)。
 
 ## 使用方法
+1. 将数据集放入 `data/` 文件夹中。
+2. 运行 `main.py` 来启动分析流程。
+3. 查看生成的报告文件 `result/root_cause_analysis_report.md`。
 
-1.  准备好需要分析的案例数据，并按照 `data/case_X` 的格式存放。每个案例应包含相应的日志、指标和追踪数据。
-2.  运行主程序：
-    ```bash
-    python main.py "分析案例 case_1"
-    ```
-    或者根据 `main.py` 中 `extract_case_id` 函数支持的其他查询方式指定案例。
-3.  系统将自动执行多智能体分析、共识评估，并输出最终的根因分析报告。
+## 依赖
+请确保安装以下依赖：
+- Python 3.10
+- pandas
+- numpy
+- matplotlib
 
-## 注意事项
+可以通过以下命令安装依赖：
+```bash
+pip install -r requirements.txt
+```
 
-*   `data` 目录下的案例数据仅为示例，实际使用时请替换为真实数据。
-*   LLM 的性能和配置会直接影响分析结果的质量。
-
-## 未来展望
-
-*   增强智能体的分析能力和交互逻辑。
-*   优化共识机制的效率和准确性。
-*   支持更多类型的数据源。
-*   提供更丰富的可视化报告。
+## 贡献
+欢迎提交问题和贡献代码！
