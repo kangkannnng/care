@@ -103,6 +103,7 @@ def analyze_metrics(case_id: Annotated[str, "案例ID，如 '1', '2', '3'"]) -> 
                 }
         
         return {
+            "metric_summary": f"Summary for metrics in case {case_id}",
             "total_data_points": total_data_points,
             "time_range": time_range,
             "services": services,

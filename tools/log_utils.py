@@ -82,6 +82,7 @@ def analyze_logs(case_id: Annotated[str, "案例ID，如 '1', '2', '3'"]) -> Dic
             }
         
         return {
+            "log_summary": f"Summary for logs in case {case_id}",
             "total_logs": total_logs,
             "services": services.tolist(),
             "log_levels": log_levels,

@@ -80,6 +80,7 @@ def analyze_traces(case_id: Annotated[str, "案例ID，如 '1', '2', '3'"]) -> D
         }
         
         return {
+            "trace_summary": f"Summary for traces in case {case_id}",
             "total_spans": total_spans,
             "trace_count": trace_count,
             "time_range": time_range,

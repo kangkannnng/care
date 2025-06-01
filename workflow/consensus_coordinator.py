@@ -174,7 +174,8 @@ class ConsensusCoordinator:
             temp_groupchat = autogen.GroupChat(
                 agents=[reviewer.agent, self.consensus_manager],
                 messages=[],
-                max_round=2
+                max_round=2,
+                speaker_selection_method='round_robin'  # 添加此行
             )
             temp_manager = autogen.GroupChatManager(
                 groupchat=temp_groupchat,
