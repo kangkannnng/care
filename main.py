@@ -17,20 +17,36 @@ import autogen
 from autogen import GroupChat, GroupChatManager
 
 from agents import LogAgent, TraceAgent, MetricAgent, ReportAgent
-from workflow.consensus_coordinator import ConsensusCoordinator
+from agents.consensus_coordinator import ConsensusCoordinator
+import random
+import datetime
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.dirname(current_dir)
+# 修复：项目根目录应该是当前目录，不是父目录
+project_root = current_dir
 sys.path.insert(0, project_root)
 
 from config import dataset_path, api_type, model
 
+# 配置日志文件夹 - 修复路径问题
+log_dir = os.path.join(project_root, "log")
+os.makedirs(log_dir, exist_ok=True)
+log_file = os.path.join(log_dir, f"run_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
+
 # 配置日志
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler(log_file, encoding='utf-8'),  # 添加编码支持
+        logging.StreamHandler()
+    ]
 )
 logger = logging.getLogger(__name__)
+
+# 添加日志级别验证
+logger.setLevel(logging.INFO)
+logger.info(f"日志文件路径: {log_file}")
 
 
 class CARE:
@@ -150,7 +166,7 @@ class CARE:
         
         # 定义严格的发言顺序
         def custom_speaker_selection(last_speaker, groupchat):
-            """自定义发言人选择：严格按照 Log → Consensus → Trace → Consensus → Metric → Consensus → Report 顺序"""
+            """自定义发言人选择：严格按照 Log → Trace → Metric → Report 顺序"""
             
             messages = groupchat.messages
             if not messages:
@@ -163,24 +179,13 @@ class CARE:
             last_msg = messages[-1]
             last_name = last_msg.get('name', '')
             
-            # 如果是智能体分析后，进行共识投票
+            # 简化的顺序逻辑
             if last_name == "日志分析师":
-                # 进行日志分析共识
-                return None  # 触发共识机制
+                return self.trace_agent
             elif last_name == "调用链分析师":
-                # 进行调用链分析共识
-                return None  # 触发共识机制
+                return self.metric_agent
             elif last_name == "指标分析师":
-                # 进行指标分析共识
-                return None  # 触发共识机制
-            elif "共识结果" in last_msg.get('content', ''):
-                # 共识完成后，继续下一个分析
-                if "日志分析" in last_msg.get('content', ''):
-                    return self.trace_agent
-                elif "调用链分析" in last_msg.get('content', ''):
-                    return self.metric_agent
-                elif "指标分析" in last_msg.get('content', ''):
-                    return self.report_agent
+                return self.report_agent
             
             return None
         
@@ -255,6 +260,15 @@ class CARE:
             # 1. 日志分析
             logger.info("开始日志分析...")
             log_result = self.log_agent.analyze_logs(case_path)
+            
+            # 修复：检查日志分析结果的错误处理
+            if isinstance(log_result, str) and "日志分析失败" in log_result:
+                logger.error(f"日志分析失败: {log_result}")
+                return {
+                    "success": False,
+                    "error": log_result
+                }
+            
             log_consensus = self.run_consensus(
                 self.log_agent,
                 "日志分析",

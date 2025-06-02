@@ -28,7 +28,8 @@ class TraceAgent(BaseAgent):
         Args:
             llm_config: LLM配置
         """
-        super().__init__("TraceAgent", llm_config, TRACE_AGENT_PROMPT)
+        super().__init__("调用链分析师", llm_config, TRACE_AGENT_PROMPT)
+        self.agent = self._create_autogen_agent()
     
     def _create_autogen_agent(self) -> autogen.ConversableAgent:
         """

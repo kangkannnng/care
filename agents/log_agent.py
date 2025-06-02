@@ -29,7 +29,8 @@ class LogAgent(BaseAgent):
         Args:
             llm_config: LLM配置
         """
-        super().__init__("LogAgent", llm_config, log_agent_prompt)
+        super().__init__("日志分析师", llm_config, log_agent_prompt)
+        self.agent = self._create_autogen_agent()
     
     def _create_autogen_agent(self) -> autogen.ConversableAgent:
         """
@@ -97,14 +98,38 @@ class LogAgent(BaseAgent):
         """
         from tools.log_utils import analyze_logs as tool_analyze_logs
         
+    def analyze_logs(self, case_path: str) -> str:
+        """
+        直接分析日志数据
+        
+        Args:
+            case_path: 案例数据路径
+            
+        Returns:
+            分析结果
+        """
+        from tools.log_utils import analyze_logs as tool_analyze_logs
+        
         try:
             # 使用工具函数分析日志
-            case_id = os.path.basename(case_path)
+            # 修复案例ID提取逻辑：从完整路径中正确提取案例ID
+            case_id = os.path.basename(case_path)  # 获取文件夹名称，如 "case_1"
+            if case_id.startswith("case_"):
+                case_id = case_id.split("_")[1]  # 提取数字部分
+            else:
+                # 如果路径不包含case_前缀，尝试其他方式
+                case_id = "1"  # 默认值
             
-            # 调用工具函数进行日志分析
-            analysis_result = tool_analyze_logs(case_id)
+            # 调用工具函数进行初步分析
+            result = tool_analyze_logs(case_id)
             
-            return analysis_result
+            # 确保返回字符串格式
+            if isinstance(result, dict):
+                if "error" in result:
+                    return f"日志分析失败: {result['error']}"
+                else:
+                    return f"日志分析完成: {result}"
+            return str(result)
             
         except Exception as e:
             return f"日志分析失败: {str(e)}"

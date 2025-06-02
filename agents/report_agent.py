@@ -28,7 +28,8 @@ class ReportAgent(BaseAgent):
         Args:
             llm_config: LLM配置
         """
-        super().__init__("ReportAgent", llm_config, REPORT_AGENT_PROMPT)
+        super().__init__("报告生成师", llm_config, REPORT_AGENT_PROMPT)
+        self.agent = self._create_autogen_agent()
     
     def _create_autogen_agent(self) -> autogen.ConversableAgent:
         """

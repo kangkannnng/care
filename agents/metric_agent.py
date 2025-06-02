@@ -28,7 +28,7 @@ class MetricAgent(BaseAgent):
         Args:
             llm_config: LLM配置
         """
-        super().__init__("MetricAgent", llm_config, METRIC_AGENT_PROMPT)
+        super().__init__("指标分析师", llm_config, METRIC_AGENT_PROMPT)
     
     def _create_autogen_agent(self) -> autogen.ConversableAgent:
         """
