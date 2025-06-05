@@ -2,6 +2,8 @@ import os
 import pandas as pd
 from typing import Dict, Any, Annotated
 from config import dataset_path
+from autogen.agentchat.group import ContextVariables, ReplyResult, RevertToUserTarget
+from typing import List, Annotated
 
 def analyze_logs(case_id: Annotated[str, "案例ID，如 '1', '2', '3'"]) -> Dict[str, Any]:
     """
@@ -283,3 +285,50 @@ def analyze_metrics(case_id: Annotated[str, "案例ID，如 '1', '2', '3'"]) -> 
         
     except Exception as e:
         return {"error": f"指标分析过程中发生错误：{str(e)}"}
+
+def initiate_review(
+    task: Annotated[str, "待复审的文本信息"],
+    context: ContextVariables
+) -> ReplyResult:
+    """
+    启动复审投票任务，初始化上下文变量
+    """
+    context["task_initiated"] = True
+    context["task_completed"] = False
+    context["evaluation_complete"] = False
+    context["current_task"] = task
+    context["votes"] = []
+    context["approve_count"] = 0
+    context["reject_count"] = 0
+    context["final_result"] = None
+    context["stage"] = 1  # 当前评审阶段，1=日志，2=指标，3=调用链
+    return ReplyResult(
+        message=f"复审任务已启动：{task}",
+        context_variables=context
+    )
+
+
+def vote_review(
+    votes: Annotated[List[str], "复审者投票列表，值为 'APPROVE' 或 'REJECT'"],
+    context: ContextVariables
+) -> ReplyResult:
+    """
+    根据复审者投票统计结果，2票及以上 APPROVE 即通过
+    """
+    approve_count = sum(1 for v in votes if v.upper() == "APPROVE")
+    reject_count = sum(1 for v in votes if v.upper() == "REJECT")
+    passed = approve_count >= 2
+    context["votes"] = votes
+    context["approve_count"] = approve_count
+    context["reject_count"] = reject_count
+    context["task_completed"] = passed
+    context["evaluation_complete"] = True
+    context["final_result"] = "APPROVE" if passed else "REJECT"
+    # 进入下一阶段
+    context["stage"] = context.get("stage", 1) + 1
+    msg = f"投票结果：APPROVE={approve_count}, REJECT={reject_count}，{'通过' if passed else '未通过'}"
+    return ReplyResult(
+        message=msg,
+        context_variables=context,
+        target=RevertToUserTarget()
+    )

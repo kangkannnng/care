@@ -1,6 +1,0 @@
-ag2==0.9.1.post0
-pandas==2.2.3
-numpy==2.2.6
-requests==2.32.3
-python-dateutil==2.9.0.post0
-ollama==0.4.9

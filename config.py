@@ -3,3 +3,4 @@ dataset_path = "/home/kangkang/code/care/data"
 # 模型配置
 api_type = "ollama"
 model = "llama3.1"
+hide_tools = "if_all_run"
