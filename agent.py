@@ -2,6 +2,7 @@ from autogen import ConversableAgent, LLMConfig
 from config import api_type, model, hide_tools
 from tool import analyze_logs, analyze_metrics, analyze_traces, initiate_review, vote_review
 from prompt import (
+    plan_agent_prompt,
     log_agent_prompt, metric_agent_prompt, trace_agent_prompt, report_agent_prompt,
     review_master_prompt, vote_coordinator_prompt,
     logic_validator_prompt, data_consistency_validator_prompt, feasibility_validator_prompt
@@ -14,6 +15,12 @@ llm_config = LLMConfig(
 )
 
 with llm_config:
+    plan_agent = ConversableAgent(
+        name="任务规划师",
+        system_message=plan_agent_prompt,
+        functions=[],
+        description="生成并管理待办流程的智能体"
+    )
     log_agent = ConversableAgent(
         name="日志分析师",
         system_message=log_agent_prompt,
