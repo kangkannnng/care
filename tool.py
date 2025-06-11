@@ -6,8 +6,7 @@ from context_variables import context_variables
 from autogen.agentchat.group import ContextVariables, ReplyResult, RevertToUserTarget
 from typing import List, Annotated
 from autogen import ConversableAgent
-from autogen.agentchat.group.targets.transition_target import AgentTarget, AgentNameTarget, RevertToUserTarget
-
+from autogen.agentchat.group.targets.transition_target import AgentNameTarget, RevertToUserTarget, NestedChatTarget
 
 def provide_analysis_plan(
         analysis_plan: Annotated[str, "分析计划内容"],
@@ -29,20 +28,30 @@ def route_to_agent(
     """
     路由到具体分析代理
     """
-    if context_variables["workflow_stage"] == "log_analysis":
+    if context_variables["workflow_stage"] == "planning":
         return ReplyResult(
-            message="当前处于日志分析阶段，请等待日志分析结果。",
+            message="已完成工作流规划，请继续进行日志分析。",
             target=AgentNameTarget("log_agent")
         )
-    elif context_variables["workflow_stage"] == "metric_analysis":
+    elif context_variables["workflow_stage"] == "log_consensus":
         return ReplyResult(
-            message="当前处于系统指标分析阶段，请等待指标分析结果。",
+            message="已完成日志分析，请继续进行系统指标分析。",
             target=AgentNameTarget("metric_agent")
         )
-    elif context_variables["workflow_stage"] == "trace_analysis":
+    elif context_variables["workflow_stage"] == "metric_consensus":
         return ReplyResult(
-            message="当前处于调用链分析阶段，请等待调用链分析结果。",
+            message="已完成系统指标分析，请继续进行调用链分析。",
             target=AgentNameTarget("trace_agent")
+        )
+    elif context_variables["workflow_stage"] == "trace_consensus":
+        return ReplyResult(
+            message="已完成调用链分析，请继续进行最终报告生成。",
+            target=AgentNameTarget("report_agent")
+        )
+    elif context_variables["workflow_stage"] == "final_report":
+        return ReplyResult(
+            message="已完成最终报告生成，分析结束。",
+            target=RevertToUserTarget()
         )
     else:
         return ReplyResult(
@@ -147,7 +156,8 @@ def provide_log_result(
     
     return ReplyResult(
         message=f"日志分析结果已保存：{analysis_result}",
-        context_variables=context_variables
+        context_variables=context_variables,
+        target=AgentNameTarget("review_agent")
     )
 
 
@@ -229,7 +239,8 @@ def provide_trace_result(
     
     return ReplyResult(
         message=f"调用链分析结果已保存：{analysis_result}",
-        context_variables=context_variables
+        context_variables=context_variables,
+        target=AgentNameTarget("review_agent")
     )
 
 
@@ -348,10 +359,14 @@ def provide_metric_result(
     
     return ReplyResult(
         message=f"系统指标分析结果已保存：{analysis_result}",
-        context_variables=context_variables
+        context_variables=context_variables,
+        target=AgentNameTarget("review_agent")
     )
 
-def prepare_vote(context_variables: ContextVariables) -> ReplyResult:
+
+def prepare_vote(
+        task: Annotated[str, "The task to be processed by multiple agents"],
+        context_variables: ContextVariables) -> ReplyResult:
     """
     准备投票任务，初始化上下文变量
     """
@@ -365,19 +380,23 @@ def prepare_vote(context_variables: ContextVariables) -> ReplyResult:
         context_variables["workflow_stage"] = "trace_consensus"
         context_variables["current_task"] = context_variables["trace_analysis_result"]
 
+    context_variables["agent_a_result"] = None
+    context_variables["agent_b_result"] = None
+    context_variables["agent_c_result"] = None
     context_variables["consensus_votes"] = []
     context_variables["approve_count"] = 0
     context_variables["reject_count"] = 0
     context_variables["final_result"] = None
 
-    task = context_variables["current_task"]
     return ReplyResult(
-        message=f"投票任务已准备，接下来请复审者对以下任务进行投票：\n{task}",
-        context_variables=context_variables
+        message=f"任务初始化完毕：{task}",
+        context_variables=context_variables,
     )
 
 
-def complete_vote(votes: Annotated[List[str], "复审者投票列表，值为 'APPROVE' 或 'REJECT'"], context_variables: ContextVariables) -> ReplyResult:
+def complete_vote(
+    votes: Annotated[List[str], "复审者投票列表，值为 'APPROVE' 或 'REJECT'"], context_variables: ContextVariables
+) -> ReplyResult:
     """
     完成投票统计，根据结果更新或返回给plan智能体
     """
@@ -391,7 +410,6 @@ def complete_vote(votes: Annotated[List[str], "复审者投票列表，值为 'A
     context_variables["final_result"] = "APPROVE" if passed else "REJECT"
 
     if passed:
-        # 更新最终结果
         if context_variables["workflow_stage"] == "log_consensus":
             context_variables["final_log_analysis_result"] = context_variables["log_analysis_result"]
             context_variables["workflow_stage"] = "metric_analysis"
@@ -411,16 +429,22 @@ def complete_vote(votes: Annotated[List[str], "复审者投票列表，值为 'A
         return ReplyResult(
             message=f"投票未通过：APPROVE={approve_count}, REJECT={reject_count}，请重新分析",
             context_variables=context_variables,
-            target=AgentTarget(agent="plan_agent")
+            target=AgentNameTarget("plan_agent")
         )
     
-# 定义任务提取和响应记录函数，用于嵌套调用分析智能体
-
-def extract_task_message(recipient: ConversableAgent, messages: list[dict[str, Any]], sender: ConversableAgent, config) -> str:
-    task = sender.context_variables.get("current_task", "")
-    return f"请评估以下分析是否合理：\n{task}"
- 
-
-def record_agent_response(sender: ConversableAgent, recipient: ConversableAgent, summary_args: dict) -> str:
-    # 记录嵌套智能体的回应，返回其消息内容
-    return summary_args.get("message", "")
+def provide_final_report(
+    final_report: Annotated[str, "最终分析报告"],
+    context_variables: ContextVariables
+) -> ReplyResult:
+    """
+    提供最终分析报告，并更新上下文变量
+    """
+    # 更新上下文变量
+    context_variables["final_report"] = final_report
+    context_variables["workflow_stage"] = "final_report"
+    
+    return ReplyResult(
+        message=f"最终分析报告已生成：{final_report}",
+        context_variables=context_variables,
+        target=RevertToUserTarget()
+    )

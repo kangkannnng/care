@@ -9,3 +9,4 @@ data/
 log/
 demo/
 tests/
+test_*.py

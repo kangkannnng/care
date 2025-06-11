@@ -13,6 +13,9 @@ context_variables = ContextVariables(data={
 
     # 投票相关变量
     "current_task": "",
+    "agent_a_result": "",
+    "agent_b_result": "",
+    "agent_c_result": "",
     "consensus_votes": [],
     "approve_count": 0,
     "reject_count": 0,

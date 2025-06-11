@@ -1,7 +1,8 @@
-from autogen import ConversableAgent, LLMConfig
+from autogen import ConversableAgent
 from config import llm_config
-from tool import provide_analysis_plan, route_to_agent, get_log, provide_log_result, \
-    get_metric, provide_metric_result, get_trace, provide_trace_result, prepare_vote, complete_vote
+
+from tool import provide_analysis_plan, route_to_agent, get_log, provide_log_result, get_metric, provide_metric_result, get_trace, provide_trace_result, prepare_vote, complete_vote, provide_final_report
+
 from prompt import (
     plan_agent_prompt,
     log_agent_prompt, metric_agent_prompt, trace_agent_prompt, report_agent_prompt,
@@ -48,39 +49,39 @@ with llm_config:
 
     reviewers = [
         ConversableAgent(
-            name="logic_validator", 
+            name="agent_a", 
             system_message=logic_validator_prompt, 
             description="验证分析推理的逻辑严谨性。"
         ),
         ConversableAgent(
-            name="data_consistency_validator", 
+            name="agent_b", 
             system_message=data_consistency_validator_prompt,
             description="校验分析中数据的一致性和准确性。"
         ),
         ConversableAgent(
-            name="feasibility_validator", 
+            name="agent_c", 
             system_message=feasibility_validator_prompt, 
             description="评估建议措施的实施可行性和风险。"
         )
     ]
 
     vote_agent = ConversableAgent(
-        name="投票管理师",
+        name="vote_agent",
         system_message=vote_coordinator_prompt,
         functions=[complete_vote],
         description="统计复审投票并判断是否通过。"
     )
 
     report_agent = ConversableAgent(
-        name="报告生成师",
+        name="report_agent",
         system_message=report_agent_prompt,
-        functions=[],
+        functions=[provide_final_report],
         description="整合分析结果并生成综合根因分析报告。"
     )
 
 # 用户代理，用于接收用户输入
 user_proxy = ConversableAgent(
-    name="用户",
+    name="user_proxy ",
     human_input_mode="ALWAYS",
     description="代表用户在对话中提供输入。"
 )
