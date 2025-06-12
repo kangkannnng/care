@@ -364,29 +364,27 @@ def provide_metric_result(
     )
 
 
-def prepare_vote(
-        task: Annotated[str, "The task to be processed by multiple agents"],
-        context_variables: ContextVariables) -> ReplyResult:
+def prepare_vote(context_variables: ContextVariables) -> ReplyResult:
     """
     准备投票任务，初始化上下文变量
     """
+    # 直接从analysis_result获取任务内容
     if context_variables["workflow_stage"] == "log_analysis":
-        context_variables["workflow_stage"] = "log_consensus"
-        context_variables["current_task"] = context_variables["log_analysis_result"]
+        task = context_variables.get("log_analysis_result", "无日志分析结果")
     elif context_variables["workflow_stage"] == "metric_analysis":
-        context_variables["workflow_stage"] = "metric_consensus"
-        context_variables["current_task"] = context_variables["metric_analysis_result"]
+        task = context_variables.get("metric_analysis_result", "无系统指标分析结果")
     elif context_variables["workflow_stage"] == "trace_analysis":
-        context_variables["workflow_stage"] = "trace_consensus"
-        context_variables["current_task"] = context_variables["trace_analysis_result"]
+        task = context_variables.get("trace_analysis_result", "无调用链分析结果")
+    
 
-    context_variables["agent_a_result"] = None
-    context_variables["agent_b_result"] = None
-    context_variables["agent_c_result"] = None
+    context_variables["current_task"] = task
+    context_variables["agent_a_result"] = ""
+    context_variables["agent_b_result"] = ""
+    context_variables["agent_c_result"] = ""
     context_variables["consensus_votes"] = []
     context_variables["approve_count"] = 0
     context_variables["reject_count"] = 0
-    context_variables["final_result"] = None
+    context_variables["final_result"] = ""
 
     return ReplyResult(
         message=f"任务初始化完毕：{task}",
@@ -394,42 +392,53 @@ def prepare_vote(
     )
 
 
-def complete_vote(
-    votes: Annotated[List[str], "复审者投票列表，值为 'APPROVE' 或 'REJECT'"], context_variables: ContextVariables
-) -> ReplyResult:
+def complete_vote(votes: List[str], context_variables: ContextVariables) -> ReplyResult:
     """
-    完成投票统计，根据结果更新或返回给plan智能体
+    完成投票统计，根据结果更新上下文变量
     """
-    approve_count = sum(1 for v in votes if v.upper() == "APPROVE")
-    reject_count = sum(1 for v in votes if v.upper() == "REJECT")
-    passed = approve_count >= 2
-    context_variables["consensus_votes"] = votes
-    context_variables["approve_count"] = approve_count
-    context_variables["reject_count"] = reject_count
-
-    context_variables["final_result"] = "APPROVE" if passed else "REJECT"
-
-    if passed:
-        if context_variables["workflow_stage"] == "log_consensus":
-            context_variables["final_log_analysis_result"] = context_variables["log_analysis_result"]
-            context_variables["workflow_stage"] = "metric_analysis"
-        elif context_variables["workflow_stage"] == "metric_consensus":
-            context_variables["final_metric_analysis_result"] = context_variables["metric_analysis_result"]
-            context_variables["workflow_stage"] = "trace_analysis"
-        elif context_variables["workflow_stage"] == "trace_consensus":
-            context_variables["final_trace_analysis_result"] = context_variables["trace_analysis_result"]
-            context_variables["workflow_stage"] = "final_report"
-
+    try:
+        # 更新投票结果
+        context_variables["consensus_votes"] = votes
+        
+        # 统计投票结果
+        approve_count = sum(1 for v in votes if v.upper() == "APPROVE")
+        reject_count = sum(1 for v in votes if v.upper() == "REJECT")
+        passed = approve_count >= 2
+        
+        # 更新投票相关变量
+        context_variables["approve_count"] = approve_count
+        context_variables["reject_count"] = reject_count
+        context_variables["final_result"] = "APPROVE" if passed else "REJECT"
+        
+        # 如果通过，保存当前分析结果
+        if passed:
+            if context_variables.get("log_analysis_result"):
+                context_variables["final_log_analysis_result"] = context_variables["log_analysis_result"]
+                context_variables["workflow_stage"] = "log_consensus"
+            if context_variables.get("metric_analysis_result"):
+                context_variables["final_metric_analysis_result"] = context_variables["metric_analysis_result"]
+                context_variables["workflow_stage"] = "metric_consensus"
+            if context_variables.get("trace_analysis_result"):
+                context_variables["final_trace_analysis_result"] = context_variables["trace_analysis_result"]
+                context_variables["workflow_stage"] = "trace_consensus"
+        
+        context_variables["current_task"] = ""
+        context_variables["agent_a_result"] = ""
+        context_variables["agent_b_result"] = ""
+        context_variables["agent_c_result"] = ""
+        context_variables["consensus_votes"] = []
+        context_variables["approve_count"] = 0
+        context_variables["reject_count"] = 0
+        context_variables["final_result"] = ""
+        
         return ReplyResult(
-            message=f"投票通过：APPROVE={approve_count}, REJECT={reject_count}，已生成最终结果",
-            context_variables=context_variables,
-            target=AgentNameTarget("plan_agent")
+            message=f"投票统计结果：\n- 赞成票数：{approve_count}\n- 反对票数：{reject_count}\n- 最终结果：{'通过' if passed else '不通过'}",
+            context_variables=context_variables
         )
-    else:
+    except Exception as e:
         return ReplyResult(
-            message=f"投票未通过：APPROVE={approve_count}, REJECT={reject_count}，请重新分析",
-            context_variables=context_variables,
-            target=AgentNameTarget("plan_agent")
+            message=f"投票统计出错: {str(e)}",
+            context_variables=context_variables
         )
     
 def provide_final_report(

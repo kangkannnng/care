@@ -1,12 +1,7 @@
 # -*- coding: utf-8 -*-
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-.vscode/
 .conda/
 data/
 log/
-demo/
-tests/
 test_*.py
+config.py
