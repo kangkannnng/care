@@ -8,7 +8,7 @@ model_name = "deepseek"
 llm_config = LLMConfig(
     api_type="deepseek",
     model="deepseek-chat",
-    api_key="sk-511f3246640241bd850af659c73283bd",
+    api_key="sk-xx",
     base_url="https://api.deepseek.com/v1"
 )
 
