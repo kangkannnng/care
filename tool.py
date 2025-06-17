@@ -1,12 +1,10 @@
 import os
 import pandas as pd
-from typing import Dict, Any, Annotated
+from typing import Annotated
 from config import dataset_path
-from context_variables import context_variables
 from autogen.agentchat.group import ContextVariables, ReplyResult, RevertToUserTarget
 from typing import List, Annotated
-from autogen import ConversableAgent
-from autogen.agentchat.group.targets.transition_target import AgentNameTarget, RevertToUserTarget, NestedChatTarget
+from autogen.agentchat.group.targets.transition_target import AgentNameTarget, RevertToUserTarget
 
 def provide_analysis_plan(
         analysis_plan: Annotated[str, "分析计划内容"],

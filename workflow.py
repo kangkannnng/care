@@ -1,12 +1,8 @@
-import os
-import pandas as pd
-from typing import Dict, Any, Annotated, List
-
-from autogen import ConversableAgent, UserProxyAgent, LLMConfig
+from autogen import ConversableAgent
 from autogen.agentchat import initiate_group_chat
-from autogen.agentchat.group import ReplyResult, ContextVariables, ExpressionContextCondition, ExpressionAvailableCondition, ContextExpression, OnContextCondition, NestedChatTarget
+from autogen.agentchat.group import ExpressionContextCondition, ContextExpression, OnContextCondition, NestedChatTarget
 from autogen.agentchat.group.patterns import DefaultPattern
-from autogen.agentchat.group.targets.transition_target import AgentTarget, AgentNameTarget, RevertToUserTarget
+from autogen.agentchat.group.targets.transition_target import AgentNameTarget
 from context_variables import context_variables
 from agent import log_agent, metric_agent, trace_agent, report_agent, review_agent, vote_agent, reviewers, user_proxy, plan_agent
 
