@@ -88,9 +88,4 @@ chat_result, final_context, last_agent = initiate_group_chat(
     max_rounds=100,
 )
 
-print("\n=== Chat Result ===")
-print(chat_result)
-print("\n=== Final Context ===")
-print(final_context)
-print("\n=== Last Agent ===")
-print(last_agent)
+# 加入结果评分代码

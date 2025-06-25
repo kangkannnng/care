@@ -1,5 +1,0 @@
-{
-  "service": "cart",
-  "metric": "cpu",
-  "root_cause": "cart_cpu"
-}

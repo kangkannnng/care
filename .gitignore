@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 __pycache__/
 .conda/
-data/
 log/
 test_*.py
 config.py
+
+openrca_dataset/
+demo_dataset/
